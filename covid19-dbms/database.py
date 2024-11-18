@@ -52,7 +52,14 @@ def add_patient(name, age, gender, symptom, test_result):
 
     conn.commit()
     conn.close()
-    print("Patient added successfully!")
 
-# Run this function to set up the database initially
-create_tables()
+# Function to retrieve all patients' data from the database
+def get_all_patients():
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('''SELECT Patient_ID, Name, Age, Gender, Symptom, Test_Result, Date_Of_Test FROM Patients''')
+    patients = cursor.fetchall()
+    
+    conn.close()
+    return patients
