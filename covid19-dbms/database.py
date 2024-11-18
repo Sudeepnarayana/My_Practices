@@ -63,3 +63,22 @@ def get_all_patients():
     
     conn.close()
     return patients
+
+# Function to delete a patient by Patient_ID
+def delete_patient(patient_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    # Check if the patient exists first
+    cursor.execute('SELECT * FROM Patients WHERE Patient_ID = ?', (patient_id,))
+    patient = cursor.fetchone()
+    
+    if patient is None:
+        conn.close()
+        raise ValueError(f"Patient with ID {patient_id} does not exist.")
+    
+    # Delete the patient from the database
+    cursor.execute('DELETE FROM Patients WHERE Patient_ID = ?', (patient_id,))
+    conn.commit()
+    conn.close()
+    print(f"Patient with ID {patient_id} deleted successfully!")

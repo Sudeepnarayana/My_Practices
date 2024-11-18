@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-from database import add_patient  # Import the add_patient function from database.py
+from database import add_patient, get_all_patients, delete_patient  # Import functions from database.py
 import sqlite3
 
 # Function to add patient data to the database
@@ -30,6 +30,7 @@ def add_patient_data():
         clear_form()
         # Refresh the patient data display after adding a new patient
         retrieve_patients_data()
+
     except Exception as e:
         messagebox.showerror("Database Error", f"Error: {e}")
 
@@ -37,26 +38,46 @@ def add_patient_data():
 def clear_form():
     entry_name.delete(0, tk.END)
     entry_age.delete(0, tk.END)
-    entry_gender.delete(0, tk.END)
+    gender_var.set(gender_options[0])  # Reset gender dropdown to default
     entry_symptom.delete(0, tk.END)
-    entry_test_result.delete(0, tk.END)
+    test_result_var.set(test_result_options[0])  # Reset test result dropdown to default
 
 # Function to retrieve patient data from the database and display it
 def retrieve_patients_data():
-    # Clear any existing data in the treeview
+    # Clear existing data in the treeview
     for row in treeview.get_children():
         treeview.delete(row)
 
-    # Connect to the database and fetch patient data
-    conn = sqlite3.connect('covid19.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT Patient_ID, Name, Age, Gender, Symptom, Test_Result, Date_Of_Test FROM Patients")
-    patients = cursor.fetchall()
-    conn.close()
+    # Fetch all patients from the database
+    patients = get_all_patients()
 
     # Insert the fetched data into the treeview
     for patient in patients:
         treeview.insert("", "end", values=patient)
+
+# Function to delete a selected patient from the database
+def delete_patient_data():
+    selected_item = treeview.selection()  # Get the selected row in Treeview
+    if not selected_item:
+        messagebox.showerror("Selection Error", "Please select a patient to delete!")
+        return
+
+    # Get the Patient_ID of the selected patient from the first column of the selected row
+    patient_id = treeview.item(selected_item)["values"][0]
+
+    # Confirm the deletion
+    confirmation = messagebox.askyesno("Confirm Deletion", f"Are you sure you want to delete patient with ID {patient_id}?")
+    if not confirmation:
+        return
+
+    # Delete the patient from the database
+    try:
+        delete_patient(patient_id)
+        # Refresh the display after deletion
+        retrieve_patients_data()
+        messagebox.showinfo("Success", f"Patient with ID {patient_id} deleted successfully!")
+    except Exception as e:
+        messagebox.showerror("Database Error", f"Error: {e}")
 
 # Create the main Tkinter window
 root = tk.Tk()
@@ -95,9 +116,12 @@ tk.Button(root, text="Add Patient", command=add_patient_data).grid(row=5, column
 # Add button to retrieve and display patient data
 tk.Button(root, text="Retrieve Patients", command=retrieve_patients_data).grid(row=6, column=0, columnspan=2)
 
+# Add button to delete the selected patient
+tk.Button(root, text="Delete Patient", command=delete_patient_data).grid(row=6, column=2)
+
 # Create a Treeview widget to display patient data in a table-like format
 treeview = ttk.Treeview(root, columns=("Patient_ID", "Name", "Age", "Gender", "Symptom", "Test_Result", "Date_Of_Test"), show="headings")
-treeview.grid(row=7, column=0, columnspan=2)
+treeview.grid(row=7, column=0, columnspan=3)
 
 # Define headings for the columns
 treeview.heading("Patient_ID", text="Patient ID")
