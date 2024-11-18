@@ -1,24 +1,35 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 from database import add_patient  # Import the add_patient function from database.py
+import sqlite3
 
 # Function to add patient data to the database
 def add_patient_data():
     name = entry_name.get()
     age = entry_age.get()
-    gender = entry_gender.get()
+    gender = gender_var.get()  # Getting selected gender from dropdown
     symptom = entry_symptom.get()
-    test_result = entry_test_result.get()
+    test_result = test_result_var.get()  # Getting selected test result
 
-    if not name or not age or not gender or not symptom or not test_result:
+    if not name or not age or not symptom:
         messagebox.showerror("Input Error", "All fields must be filled out!")
         return
 
     try:
+        # Validate and convert age to integer
+        age = int(age)
+    except ValueError:
+        messagebox.showerror("Input Error", "Age must be a number!")
+        return
+
+    try:
         # Call the function from database.py to add the patient
-        add_patient(name, int(age), gender, symptom, test_result)
+        add_patient(name, age, gender, symptom, test_result)
         messagebox.showinfo("Success", "Patient added successfully!")
         clear_form()
+        # Refresh the patient data display after adding a new patient
+        retrieve_patients_data()
     except Exception as e:
         messagebox.showerror("Database Error", f"Error: {e}")
 
@@ -29,6 +40,23 @@ def clear_form():
     entry_gender.delete(0, tk.END)
     entry_symptom.delete(0, tk.END)
     entry_test_result.delete(0, tk.END)
+
+# Function to retrieve patient data from the database and display it
+def retrieve_patients_data():
+    # Clear any existing data in the treeview
+    for row in treeview.get_children():
+        treeview.delete(row)
+
+    # Connect to the database and fetch patient data
+    conn = sqlite3.connect('covid19.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT Patient_ID, Name, Age, Gender, Symptom, Test_Result, Date_Of_Test FROM Patients")
+    patients = cursor.fetchall()
+    conn.close()
+
+    # Insert the fetched data into the treeview
+    for patient in patients:
+        treeview.insert("", "end", values=patient)
 
 # Create the main Tkinter window
 root = tk.Tk()
@@ -44,19 +72,41 @@ entry_age = tk.Entry(root)
 entry_age.grid(row=1, column=1)
 
 tk.Label(root, text="Gender:").grid(row=2, column=0)
-entry_gender = tk.Entry(root)
-entry_gender.grid(row=2, column=1)
+gender_options = ["Male", "Female", "Other"]
+gender_var = tk.StringVar(root)
+gender_var.set(gender_options[0])  # Default to "Male"
+gender_menu = tk.OptionMenu(root, gender_var, *gender_options)
+gender_menu.grid(row=2, column=1)
 
 tk.Label(root, text="Symptom:").grid(row=3, column=0)
 entry_symptom = tk.Entry(root)
 entry_symptom.grid(row=3, column=1)
 
 tk.Label(root, text="Test Result (Positive/Negative):").grid(row=4, column=0)
-entry_test_result = tk.Entry(root)
-entry_test_result.grid(row=4, column=1)
+test_result_options = ["Positive", "Negative"]
+test_result_var = tk.StringVar(root)
+test_result_var.set(test_result_options[0])  # Default to "Positive"
+test_result_menu = tk.OptionMenu(root, test_result_var, *test_result_options)
+test_result_menu.grid(row=4, column=1)
 
 # Add button to submit data
 tk.Button(root, text="Add Patient", command=add_patient_data).grid(row=5, column=0, columnspan=2)
+
+# Add button to retrieve and display patient data
+tk.Button(root, text="Retrieve Patients", command=retrieve_patients_data).grid(row=6, column=0, columnspan=2)
+
+# Create a Treeview widget to display patient data in a table-like format
+treeview = ttk.Treeview(root, columns=("Patient_ID", "Name", "Age", "Gender", "Symptom", "Test_Result", "Date_Of_Test"), show="headings")
+treeview.grid(row=7, column=0, columnspan=2)
+
+# Define headings for the columns
+treeview.heading("Patient_ID", text="Patient ID")
+treeview.heading("Name", text="Name")
+treeview.heading("Age", text="Age")
+treeview.heading("Gender", text="Gender")
+treeview.heading("Symptom", text="Symptom")
+treeview.heading("Test_Result", text="Test Result")
+treeview.heading("Date_Of_Test", text="Date of Test")
 
 # Start the Tkinter main loop
 root.mainloop()
