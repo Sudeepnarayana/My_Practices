@@ -84,11 +84,18 @@ class MarkovChainTextComposer:
 if __name__ == "__main__":
     # Sample text for training
     text = """
-    Markov chains are mathematical systems that undergo transitions from one state to another within a finite set of states.
-    They are a special case of the more general class of stochastic processes.
-    Markov chains have many applications in areas such as statistical modeling, machine learning, and natural language processing.
-    """
+The forest hummed with life, a symphony of rustling leaves, chirping birds, and the distant babble of a brook winding its way through 
+moss-covered rocks. A faint golden light filtered through the canopy, casting dappled patterns on the forest floor where mushrooms 
+sprouted in clusters like tiny, otherworldly umbrellas. "This place feels alive," she murmured, her voice barely above a whisper, 
+as if speaking louder might disturb the ancient spirits of the woods. The wind carried with it the scent of pine and earth, 
+mingling with the faint aroma of wildflowers blooming somewhere nearby. In her mind, she replayed the instructions: walk straight
+ until you see the old oak with the split trunk, then turn left. It sounded simple enough, yet every tree seemed to hold secrets, and 
+ every path seemed eager to lead her astray. Somewhere above, a raven cawed, its echo fading into the vast, unending green. 
+ She tightened her grip on her satchel, the faint weight of the parchment inside reminding her of the task ahead.
+   "The answers lie beyond," the stranger had said, cryptic and calm, leaving her to decipher the meaning in her own way.
 
+
+    """
     # Initialize the composer (e.g., bigram model)
     composer = MarkovChainTextComposer(n=2, punctuation=True, capitalization=True)
 
