@@ -53,6 +53,27 @@ class MarkovChainTextComposer:
         # Join the words to form the final sentence
         return ' '.join(output_words)
     
+    def predict_next_word(self, input_text):
+        """Predicts the next word based on the user's input."""
+        if not self.chain:
+            return "Error: Markov Chain model is empty. Please train with a larger text corpus."
+        
+        # Tokenize the user input
+        if self.punctuation:
+            words = re.findall(r'\b\w+\b|[.,!?;]', input_text.lower())
+        else:
+            words = re.findall(r'\b\w+\b', input_text.lower())
+        
+        # Get the last n-gram from the user's input
+        current_state = tuple(words[-self.n:])
+        
+        # If the n-gram exists in the chain, suggest the most likely next word
+        if current_state in self.chain:
+            next_word = self._weighted_random_choice(self.chain[current_state])
+            return next_word
+        
+        return "No prediction available for the given input."
+    
     def _weighted_random_choice(self, options):
         """Chooses a random word from the options, weighted by frequency."""
         total_weight = sum(options.values())  # Total frequency of all options
@@ -93,8 +114,6 @@ mingling with the faint aroma of wildflowers blooming somewhere nearby. In her m
  every path seemed eager to lead her astray. Somewhere above, a raven cawed, its echo fading into the vast, unending green. 
  She tightened her grip on her satchel, the faint weight of the parchment inside reminding her of the task ahead.
    "The answers lie beyond," the stranger had said, cryptic and calm, leaving her to decipher the meaning in her own way.
-
-
     """
     # Initialize the composer (e.g., bigram model)
     composer = MarkovChainTextComposer(n=2, punctuation=True, capitalization=True)
@@ -106,3 +125,9 @@ mingling with the faint aroma of wildflowers blooming somewhere nearby. In her m
     generated_text = composer.generate_text(length=50)
     print("Generated Text:")
     print(generated_text)
+    
+    # Predict the next word based on user input
+    user_input =input("enter the word to predict the next one: ")
+    prediction = composer.predict_next_word(user_input)
+    print("\nUser Input:", user_input)
+    print("Predicted Next Word:", prediction)
