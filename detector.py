@@ -52,14 +52,14 @@ class ObjectDetector:
 
         prev_time = 0
 
-        vehicle_classes = [2, 3, 5, 7]  # car, bike, bus, truck
+         # car, bike, bus, truck
 
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
 
-            annotated, count = self.detect_frame(frame, classes=vehicle_classes)
+            annotated, count = self.detect_frame(frame, classes=None)
 
             curr_time = time.time()
             fps = 1 / (curr_time - prev_time) if prev_time else 0
